@@ -16,6 +16,17 @@ jobs:
           node-version: 20
           cache: npm
 
+      - name: Debug workspace
+        run: |
+          pwd
+          ls -la
+          echo "---- lockfile ----"
+          ls -la package-lock.json || true
+          node -v
+          npm -v
+          echo "---- first lines ----"
+          sed -n '1,20p' package-lock.json || true
+
       - run: npm ci
 
       - run: npm run lint
@@ -32,6 +43,17 @@ jobs:
         with:
           node-version: 20
           cache: npm
+
+      - name: Debug workspace
+        run: |
+          pwd
+          ls -la
+          echo "---- lockfile ----"
+          ls -la package-lock.json || true
+          node -v
+          npm -v
+          echo "---- first lines ----"
+          sed -n '1,20p' package-lock.json || true
 
       - run: npm ci
 
