@@ -1,0 +1,12 @@
+# Require architect on everything
+* @your-architect
+
+# FE/BE specific owners
+/apps/web/** @your-frontend
+/apps/api/** @your-backend
+
+# e2e
+/e2e/** @your-tester
+
+# product/acceptance owned by PM
+/docs/product/** @your-pm

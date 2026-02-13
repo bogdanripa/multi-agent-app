@@ -1,0 +1,14 @@
+{
+  "name": "@acme/e2e",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "lint": "echo \"add later\"",
+    "typecheck": "echo \"add later\""
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "my-app",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "e2e"
+  ],
+  "scripts": {
+    "lint": "npm -ws run lint",
+    "typecheck": "npm -ws run typecheck",
+    "test": "npm -ws run test",
+    "e2e": "npm -w e2e run test",
+    "ci": "npm run lint && npm run typecheck && npm run test && npm run e2e"
+  },
+  "devDependencies": {
+    "wait-on": "^9.0.4"
+  }
+}

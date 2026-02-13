@@ -1,0 +1,21 @@
+{
+  "name": "@acme/api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "lint": "echo \"add eslint later\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "echo \"add unit tests later\""
+  },
+  "dependencies": {
+    "@acme/shared": "^0.0.0",
+    "fastify": "^4.28.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.5.4"
+  }
+}
