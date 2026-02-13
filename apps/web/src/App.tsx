@@ -2,6 +2,16 @@ import { useEffect, useState } from "react";
 
 type Health = { ok: true; service: "api"; time: string };
 
+function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "string") return err;
+  try {
+    return JSON.stringify(err);
+  } catch {
+    return "Failed to load";
+  }
+}
+
 export default function App() {
   const [health, setHealth] = useState<Health | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -11,9 +21,9 @@ export default function App() {
       try {
         const r = await fetch("/api/health");
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        setHealth(await r.json());
-      } catch (e: any) {
-        setError(e?.message ?? "Failed to load");
+        setHealth((await r.json()) as Health);
+      } catch (e: unknown) {
+        setError(getErrorMessage(e));
       }
     })();
   }, []);
