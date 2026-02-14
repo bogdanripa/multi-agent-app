@@ -29,6 +29,9 @@ jobs:
 
       - run: npm ci
 
+      - name: Contract guard
+        run: npm run contract:guard
+        
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test
@@ -62,6 +65,10 @@ jobs:
 
       - name: Start API
         run: nohup npm -w apps/api run start &
+
+      - name: Wait for API
+        run: npx wait-on http://127.0.0.1:3001/api/health
+
       - name: Start Web
         run: nohup npm -w apps/web run dev -- --host 0.0.0.0 --port 5173 &
 

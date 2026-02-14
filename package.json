@@ -12,7 +12,8 @@
     "test:unit": "npm -ws --if-present run test:unit",
     "test": "npm run test:unit",
     "e2e": "npm -w e2e run test",
-    "ci": "npm run lint && npm run typecheck && npm run test && npm run e2e"
+    "ci": "npm run lint && npm run typecheck && npm run test && npm run e2e",
+    "contract:guard": "bash scripts/contract-guard.sh"
   },
   "devDependencies": {
     "wait-on": "^9.0.4"

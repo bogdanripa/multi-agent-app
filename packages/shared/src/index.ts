@@ -1,1 +1,2 @@
-export type HealthResponse = { ok: true; service: "api"; time: string };
+export * from "./contracts/common";
+export * from "./contracts/health";

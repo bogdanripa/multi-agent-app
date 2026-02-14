@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-type Health = { ok: true; service: "api"; time: string };
+import type { HealthResponse } from "@acme/shared";
 
 function getErrorMessage(err: unknown): string {
   if (err instanceof Error) return err.message;
@@ -13,7 +13,7 @@ function getErrorMessage(err: unknown): string {
 }
 
 export default function App() {
-  const [health, setHealth] = useState<Health | null>(null);
+  const [health, setHealth] = useState<HealthResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export default function App() {
       try {
         const r = await fetch("/api/health");
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        setHealth((await r.json()) as Health);
+        setHealth((await r.json()) as HealthResponse);
       } catch (e: unknown) {
         setError(getErrorMessage(e));
       }

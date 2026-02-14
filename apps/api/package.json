@@ -8,7 +8,7 @@
     "lint": "echo \"add eslint later\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "npm run test:unit",
-    "test:unit": "echo \"no unit tests\"",
+    "test:unit": "echo \"no unit tests\""
   },
   "dependencies": {
     "@acme/shared": "^0.0.0",
