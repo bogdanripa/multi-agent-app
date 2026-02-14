@@ -1,5 +1,5 @@
 {
-  "name": "my-app",
+  "name": "task-organizer",
   "private": true,
   "workspaces": [
     "apps/*",

@@ -30,7 +30,7 @@ export default function App() {
 
   return (
     <div style={{ padding: 24, fontFamily: "system-ui" }}>
-      <h1>My App</h1>
+      <h1>Task Organizer</h1>
       {!health && !error && <p>Loading…</p>}
       {error && <p role="alert">Error: {error}</p>}
       {health && (

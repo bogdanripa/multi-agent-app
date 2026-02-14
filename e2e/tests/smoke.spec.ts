@@ -20,7 +20,7 @@ test("shows loading while fetching health and then renders payload", async ({ pa
   });
 
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "My App" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Task Organizer" })).toBeVisible();
   await expect(page.getByText("Loading…")).toBeVisible();
 
   releaseResponse();
