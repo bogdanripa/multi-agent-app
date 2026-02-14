@@ -7,7 +7,8 @@
     "start": "tsx src/index.ts",
     "lint": "echo \"add eslint later\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "echo \"add unit tests later\""
+    "test": "npm run test:unit",
+    "test:unit": "echo \"no unit tests\"",
   },
   "dependencies": {
     "@acme/shared": "^0.0.0",

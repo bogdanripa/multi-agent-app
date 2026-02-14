@@ -8,7 +8,8 @@
   "scripts": {
     "lint": "echo \"no lint yet\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "echo \"no tests\""
+    "test:unit": "echo \"no unit tests\"",
+    "test": "npm run test:unit"
   },
   "devDependencies": {
     "typescript": "^5.5.4"
