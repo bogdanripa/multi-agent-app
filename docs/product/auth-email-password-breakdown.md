@@ -36,3 +36,44 @@
 
 ## Gate
 - FE/BE implementation must not start until Architect auth contract exists.
+
+## Execution Board (PM-driven)
+1. Architect PR (blocking)
+- Deliverables:
+- `docs/architecture/interfaces/features/NNNN-auth-email-password.md`
+- `packages/shared` auth contract types
+- `docs/architecture/interfaces.md` auth entry update
+- Exit criteria:
+- Contract includes request/response schemas, status codes, and examples for sign-up, sign-in, sign-out, and session lookup.
+- PM approves contract completeness against AT-2 to AT-6.
+
+2. Backend PR
+- Depends on: Architect PR merged
+- Deliverables:
+- Auth routes + validation + session handling using shared contract types only
+- Exit criteria:
+- Backend responses match contract for success and error cases.
+- Unit/integration tests cover invalid credentials and session revoke behavior.
+
+3. Frontend PR
+- Depends on: Architect PR merged
+- Deliverables:
+- Sign-up/sign-in UI, authenticated state UI, sign-out action
+- Session restore flow on app load
+- Exit criteria:
+- All auth user journeys in AT-2 to AT-6 are implemented.
+- FE uses shared contract types; no local contract drift.
+
+4. Tester PR
+- Depends on: Backend PR + Frontend PR merged
+- Deliverables:
+- E2E tests for AT-2 through AT-6
+- Exit criteria:
+- E2E passes on preview environment.
+- UX gate confirms clear loading/error/authenticated/logged-out states.
+
+5. PM Acceptance Gate
+- Depends on: Tester PR merged + preview available
+- Exit criteria:
+- Acceptance tests AT-1 through AT-6 pass on preview.
+- No contract drift or undocumented behavior changes.
