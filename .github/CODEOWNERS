@@ -1,0 +1,16 @@
+# --- Global rule: architect must approve everything ---
+* @bogdanripa/architects
+
+# --- Contracts + architecture: architect-only gate ---
+/packages/shared/** @bogdanripa/architects
+/docs/architecture/** @bogdanripa/architects
+
+# --- App ownership ---
+/apps/web/** @bogdanripa/frontend
+/apps/api/** @bogdanripa/backend
+
+# --- E2E ownership ---
+/e2e/** @bogdanripa/testers
+
+# --- Product docs / acceptance ---
+/docs/product/** @bogdanripa/pm
