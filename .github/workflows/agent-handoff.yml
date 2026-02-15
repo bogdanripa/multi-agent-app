@@ -20,6 +20,10 @@ jobs:
             const pr = context.payload.pull_request;
             if (!pr) return;
 
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pull_number = pr.number;
+
             const labels = (pr.labels || []).map((l) => l.name);
             const triggeredLabel = context.payload.label?.name || null;
 
@@ -33,41 +37,40 @@ jobs:
             }
 
             const role = handoffLabel.split(":")[1];
-            const teamByRole = {
-              architect: "architects",
-              frontend: "frontend",
-              backend: "backend",
-              tester: "testers",
-              pm: "pm"
+
+            // Map roles to GitHub usernames (no @ prefix)
+            const reviewersByRole = {
+              architect: ["bogdanripa"],
+              frontend: ["bogdanripa"],
+              backend: ["bogdanripa"],
+              tester: ["bogdanripa"],
+              pm: ["bogdanripa"]
             };
 
-            const teamSlug = teamByRole[role];
-            if (!teamSlug) {
+            const reviewers = reviewersByRole[role];
+            if (!reviewers) {
               core.setFailed(`Unsupported handoff label: ${handoffLabel}`);
               return;
             }
 
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
-            const pull_number = pr.number;
-
-            // Best effort: request review from the next team.
+            // Best effort: request review from the next owner(s).
             try {
               await github.rest.pulls.requestReviewers({
                 owner,
                 repo,
                 pull_number,
-                team_reviewers: [teamSlug]
+                reviewers
               });
-              core.info(`Requested review from team @${owner}/${teamSlug}.`);
+              core.info(`Requested review from: ${reviewers.join(", ")}`);
             } catch (err) {
-              core.warning(`Could not request team reviewers: ${err.message}`);
+              core.warning(`Could not request reviewers: ${err.message}`);
             }
 
             const marker = `<!-- agent-handoff:${handoffLabel} -->`;
-            const body =
+            const prBody =
               `${marker}\n` +
               `Handoff triggered to **${role}** via \`${handoffLabel}\`.\n\n` +
+              `Requested reviewers: ${reviewers.map(r => `@${r}`).join(", ")}\n\n` +
               `Next-owner actions:\n` +
               `1. Pick up this PR immediately.\n` +
               `2. Continue work or open a successor PR referencing this one.\n` +
@@ -77,5 +80,36 @@ jobs:
               owner,
               repo,
               issue_number: pull_number,
-              body
+              body: prBody
             });
+
+            // --- Post to Run Issue if present in PR body ---
+            // Expected line: "Run-Issue: https://github.com/<owner>/<repo>/issues/<num>"
+            const runIssueRegex = /Run-Issue:\s*(https:\/\/github\.com\/[^\/]+\/[^\/]+\/issues\/(\d+))/i;
+            const match = (pr.body || "").match(runIssueRegex);
+
+            if (!match) {
+              core.info("No Run-Issue link found in PR body; skipping run room update.");
+              return;
+            }
+
+            const runIssueUrl = match[1];
+            const runIssueNumber = Number(match[2]);
+            if (!Number.isFinite(runIssueNumber)) {
+              core.warning(`Could not parse run issue number from: ${runIssueUrl}`);
+              return;
+            }
+
+            const runBody =
+              `🔁 **Handoff:** \`${handoffLabel}\` → **${role}**\n\n` +
+              `PR: #${pull_number} (${pr.html_url})\n` +
+              `Requested: ${reviewers.map(r => `@${r}`).join(", ")}\n`;
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: runIssueNumber,
+              body: runBody
+            });
+
+            core.info(`Posted handoff update to Run Issue #${runIssueNumber}.`);
