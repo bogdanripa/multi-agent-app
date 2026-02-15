@@ -7,11 +7,11 @@
     "e2e"
   ],
   "scripts": {
-    "lint": "npm -ws run lint",
-    "typecheck": "npm -ws run typecheck",
-    "test:unit": "npm -ws --if-present run test:unit",
+    "lint": "npm --workspaces run lint",
+    "typecheck": "npm --workspaces run typecheck",
+    "test:unit": "npm --workspaces --if-present run test:unit",
     "test": "npm run test:unit",
-    "e2e": "npm -w e2e run test",
+    "e2e": "npm --workspace e2e run test",
     "ci": "npm run lint && npm run typecheck && npm run test && npm run e2e",
     "contract:guard": "bash scripts/contract-guard.sh"
   },
