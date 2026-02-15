@@ -33,16 +33,18 @@ jobs:
             }
 
             const role = handoffLabel.split(":")[1];
-            const teamByRole = {
-              architect: "architects",
-              frontend: "frontend",
-              backend: "backend",
-              tester: "testers",
-              pm: "pm"
+
+            // Map roles to GitHub usernames (no @ prefix)
+            const reviewersByRole = {
+              architect: ["bogdanripa"],
+              frontend: ["bogdanripa"],
+              backend: ["bogdanripa"],
+              tester: ["bogdanripa"],
+              pm: ["bogdanripa"]
             };
 
-            const teamSlug = teamByRole[role];
-            if (!teamSlug) {
+            const reviewers = reviewersByRole[role];
+            if (!reviewers) {
               core.setFailed(`Unsupported handoff label: ${handoffLabel}`);
               return;
             }
@@ -51,23 +53,24 @@ jobs:
             const repo = context.repo.repo;
             const pull_number = pr.number;
 
-            // Best effort: request review from the next team.
+            // Best effort: request review from the next owner(s).
             try {
               await github.rest.pulls.requestReviewers({
                 owner,
                 repo,
                 pull_number,
-                team_reviewers: [teamSlug]
+                reviewers
               });
-              core.info(`Requested review from team @${owner}/${teamSlug}.`);
+              core.info(`Requested review from: ${reviewers.join(", ")}`);
             } catch (err) {
-              core.warning(`Could not request team reviewers: ${err.message}`);
+              core.warning(`Could not request reviewers: ${err.message}`);
             }
 
             const marker = `<!-- agent-handoff:${handoffLabel} -->`;
             const body =
               `${marker}\n` +
               `Handoff triggered to **${role}** via \`${handoffLabel}\`.\n\n` +
+              `Requested reviewers: ${reviewers.map(r => `@${r}`).join(", ")}\n\n` +
               `Next-owner actions:\n` +
               `1. Pick up this PR immediately.\n` +
               `2. Continue work or open a successor PR referencing this one.\n` +
