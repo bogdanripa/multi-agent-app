@@ -1,0 +1,81 @@
+name: Agent Handoff
+
+on:
+  pull_request_target:
+    types: [opened, reopened, labeled, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  handoff:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Process handoff label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            if (!pr) return;
+
+            const labels = (pr.labels || []).map((l) => l.name);
+            const triggeredLabel = context.payload.label?.name || null;
+
+            const handoffLabel =
+              (triggeredLabel && triggeredLabel.startsWith("handoff:") && triggeredLabel) ||
+              labels.find((name) => name.startsWith("handoff:"));
+
+            if (!handoffLabel) {
+              core.info("No handoff label found; skipping.");
+              return;
+            }
+
+            const role = handoffLabel.split(":")[1];
+            const teamByRole = {
+              architect: "architects",
+              frontend: "frontend",
+              backend: "backend",
+              tester: "testers",
+              pm: "pm"
+            };
+
+            const teamSlug = teamByRole[role];
+            if (!teamSlug) {
+              core.setFailed(`Unsupported handoff label: ${handoffLabel}`);
+              return;
+            }
+
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pull_number = pr.number;
+
+            // Best effort: request review from the next team.
+            try {
+              await github.rest.pulls.requestReviewers({
+                owner,
+                repo,
+                pull_number,
+                team_reviewers: [teamSlug]
+              });
+              core.info(`Requested review from team @${owner}/${teamSlug}.`);
+            } catch (err) {
+              core.warning(`Could not request team reviewers: ${err.message}`);
+            }
+
+            const marker = `<!-- agent-handoff:${handoffLabel} -->`;
+            const body =
+              `${marker}\n` +
+              `Handoff triggered to **${role}** via \`${handoffLabel}\`.\n\n` +
+              `Next-owner actions:\n` +
+              `1. Pick up this PR immediately.\n` +
+              `2. Continue work or open a successor PR referencing this one.\n` +
+              `3. Close superseded PRs when ownership moves forward.`;
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: pull_number,
+              body
+            });
