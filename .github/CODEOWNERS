@@ -1,9 +1,0 @@
-* @org/architects
-
-/packages/shared/** @org/architects
-/docs/architecture/interfaces/** @org/architects
-
-/apps/web/** @org/frontend
-/apps/api/** @org/backend
-/e2e/** @org/testers
-/docs/product/** @org/pm
