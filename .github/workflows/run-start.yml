@@ -22,8 +22,7 @@ jobs:
 
             const goal = issue.title + "\n\n" + (issue.body || "");
 
-            const plan =
-`🧠 **PM agent has started processing this request**
+            const plan = `🧠 **PM agent has started processing this request**
 
 ### 🎯 Goal
 ${goal}
