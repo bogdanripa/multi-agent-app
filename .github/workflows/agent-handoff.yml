@@ -20,6 +20,10 @@ jobs:
             const pr = context.payload.pull_request;
             if (!pr) return;
 
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pull_number = pr.number;
+
             const labels = (pr.labels || []).map((l) => l.name);
             const triggeredLabel = context.payload.label?.name || null;
 
@@ -33,41 +37,40 @@ jobs:
             }
 
             const role = handoffLabel.split(":")[1];
-            const teamByRole = {
-              architect: "architects",
-              frontend: "frontend",
-              backend: "backend",
-              tester: "testers",
-              pm: "pm"
+
+            // Map roles to GitHub usernames (no @ prefix)
+            const reviewersByRole = {
+              architect: ["bogdanripa"],
+              frontend: ["bogdanripa"],
+              backend: ["bogdanripa"],
+              tester: ["bogdanripa"],
+              pm: ["bogdanripa"]
             };
 
-            const teamSlug = teamByRole[role];
-            if (!teamSlug) {
+            const reviewers = reviewersByRole[role];
+            if (!reviewers) {
               core.setFailed(`Unsupported handoff label: ${handoffLabel}`);
               return;
             }
 
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
-            const pull_number = pr.number;
-
-            // Best effort: request review from the next team.
+            // Best effort: request review from the next owner(s).
             try {
               await github.rest.pulls.requestReviewers({
                 owner,
                 repo,
                 pull_number,
-                team_reviewers: [teamSlug]
+                reviewers
               });
-              core.info(`Requested review from team @${owner}/${teamSlug}.`);
+              core.info(`Requested review from: ${reviewers.join(", ")}`);
             } catch (err) {
-              core.warning(`Could not request team reviewers: ${err.message}`);
+              core.warning(`Could not request reviewers: ${err.message}`);
             }
 
             const marker = `<!-- agent-handoff:${handoffLabel} -->`;
-            const body =
+            const prBody =
               `${marker}\n` +
               `Handoff triggered to **${role}** via \`${handoffLabel}\`.\n\n` +
+              `Requested reviewers: ${reviewers.map(r => `@${r}`).join(", ")}\n\n` +
               `Next-owner actions:\n` +
               `1. Pick up this PR immediately.\n` +
               `2. Continue work or open a successor PR referencing this one.\n` +
@@ -77,20 +80,38 @@ jobs:
               owner,
               repo,
               issue_number: pull_number,
-              body
+              body: prBody
             });
-            // --- also post to linked issue if PR references one ---
-            const linkedIssue = (pr.body || "").match(/#(\d+)/);
+            // --- Post to Run Issue (preferred) or linked issue via "Fixes #n" / "Refs #n" ---
+            let issueNumber = null;
             
-            if (linkedIssue) {
-              const issueNumber = Number(linkedIssue[1]);
+            // 1) Preferred: explicit Run-Issue line
+            const runIssueRegex = /Run-Issue:\s*https:\/\/github\.com\/[^\/]+\/[^\/]+\/issues\/(\d+)/i;
+            const runMatch = (pr.body || "").match(runIssueRegex);
+            if (runMatch) issueNumber = Number(runMatch[1]);
             
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issueNumber,
-                body: `🔁 PR #${pull_number} handed off to **${role}** via \`${handoffLabel}\``
-              });
-            
-              core.info(`Posted update to issue #${issueNumber}`);
+            // 2) Fallback: Fixes/Closes/Resolves/Refs #n
+            if (!issueNumber) {
+              const linkRegex = /\b(?:Fixes|Closes|Resolves|Refs|References)\s+#(\d+)\b/i;
+              const linkMatch = (pr.body || "").match(linkRegex);
+              if (linkMatch) issueNumber = Number(linkMatch[1]);
             }
+            
+            if (!issueNumber || !Number.isFinite(issueNumber)) {
+              core.info("No run issue reference found in PR body; skipping run room update.");
+              return;
+            }
+            
+            const runBody =
+              `🔁 **Handoff:** \`${handoffLabel}\` → **${role}**\n\n` +
+              `PR: #${pull_number} (${pr.html_url})\n` +
+              `Requested: ${reviewers.map(r => `@${r}`).join(", ")}\n`;
+            
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: issueNumber,
+              body: runBody
+            });
+            
+            core.info(`Posted handoff update to issue #${issueNumber}.`);
