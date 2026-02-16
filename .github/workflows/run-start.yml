@@ -22,24 +22,23 @@ jobs:
 
             const goal = issue.title + "\n\n" + (issue.body || "");
 
-            const plan = `🧠 **PM agent has started processing this request**
-
-### 🎯 Goal
-${goal}
-
-### 📋 Initial task breakdown
-1. Clarify requirements (PM)
-2. Define architecture + contracts (Architect)
-3. If needed - implement backend changes (Backend)
-4. If needed - implement frontend changes (Frontend)
-5. Run e2e + UX validation (Tester)
-
-### ➡️ Next step
-Handing off to **Architect** to define contracts & architecture.
-
-(Automation will continue via PRs + handoff labels.)
-`;
-
+            const plan = "🧠 **PM agent has started processing this request**\n" +
+            "\n" +
+            "### 🎯 Goal\n" +
+            goal + "\n" +
+            "\n" +
+            "### 📋 Initial task breakdown\n" +
+            "1. Clarify requirements (PM)\n" +
+            "2. Define architecture + contracts (Architect)\n" +
+            "3. If needed - implement backend changes (Backend)\n" +
+            "4. If needed - implement frontend changes (Frontend)\n" +
+            "5. Run e2e + UX validation (Tester)\n" +
+            "\n" +
+            "### ➡️ Next step\n" +
+            "Handing off to **Architect** to define contracts & architecture.\n" +
+            "\n" +
+            "(Automation will continue via PRs + handoff labels.)" +
+            "\n";
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
