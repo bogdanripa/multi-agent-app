@@ -79,3 +79,18 @@ jobs:
               issue_number: pull_number,
               body
             });
+            // --- also post to linked issue if PR references one ---
+            const linkedIssue = (pr.body || "").match(/#(\d+)/);
+            
+            if (linkedIssue) {
+              const issueNumber = Number(linkedIssue[1]);
+            
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                body: `🔁 PR #${pull_number} handed off to **${role}** via \`${handoffLabel}\``
+              });
+            
+              core.info(`Posted update to issue #${issueNumber}`);
+            }
