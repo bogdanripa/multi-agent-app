@@ -12,19 +12,38 @@ jobs:
   start:
     runs-on: ubuntu-latest
     steps:
-      - name: Announce PM pickup
+      - name: PM creates initial plan
         uses: actions/github-script@v7
         with:
           script: |
             const issue = context.payload.issue;
             if (!issue) return;
-
-            // ignore PRs
             if (issue.pull_request) return;
+
+            const goal = issue.title + "\n\n" + (issue.body || "");
+
+            const plan =
+`🧠 **PM agent has started processing this request**
+
+### 🎯 Goal
+${goal}
+
+### 📋 Initial task breakdown
+1. Clarify requirements (PM)
+2. Define architecture + contracts (Architect)
+3. If needed - implement backend changes (Backend)
+4. If needed - implement frontend changes (Frontend)
+5. Run e2e + UX validation (Tester)
+
+### ➡️ Next step
+Handing off to **Architect** to define contracts & architecture.
+
+(Automation will continue via PRs + handoff labels.)
+`;
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issue.number,
-              body: `🧠 **PM agent** has started processing this request.\n\nNext step: breaking down into tasks...`
+              body: plan
             });
