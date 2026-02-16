@@ -107,11 +107,26 @@ jobs:
               `PR: #${pull_number} (${pr.html_url})\n` +
               `Requested: ${reviewers.map(r => `@${r}`).join(", ")}\n`;
             
+            // --- Idempotency (run room only): avoid posting same PR+handoff twice ---
+            const idemMarker = `<!-- handoff:${handoffLabel}:pr:${pull_number} -->`;
+            
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number: issueNumber,
+              per_page: 100
+            });
+            
+            if (comments.some(c => (c.body || "").includes(idemMarker))) {
+              core.info(`Run issue already has marker ${idemMarker}; skipping duplicate post.`);
+              return;
+            }
+            
             await github.rest.issues.createComment({
               owner,
               repo,
               issue_number: issueNumber,
-              body: runBody
+              body: `${idemMarker}\n${runBody}`
             });
             
             core.info(`Posted handoff update to issue #${issueNumber}.`);
